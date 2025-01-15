@@ -2,23 +2,28 @@
 include('header.php');
 
 function getRevenueDataByCategory($conn, $month, $year) {
+    $company_id = $_SESSION['company_id'];
+
     $sql = "SELECT 
         SUM(CASE WHEN category = 'sales' THEN amount ELSE 0 END) as total_sales,
         SUM(CASE WHEN category = 'investment' THEN amount ELSE 0 END) as total_investment,
         SUM(CASE WHEN category = 'loan received' THEN amount ELSE 0 END) as total_loan_received,
         SUM(CASE WHEN category = 'others' THEN amount ELSE 0 END) as total_others
         FROM revenue
-        WHERE MONTH(date) = :month AND YEAR(date) = :year";
+        WHERE MONTH(date) = :month AND YEAR(date) = :year AND company_id = :company_id";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute([
         ':month' => $month,
-        ':year' => $year
+        ':year' => $year,
+        ':company_id' => $company_id
     ]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 function getExpenseDataByCategory($conn, $month, $year) {
+    $company_id = $_SESSION['company_id'];
+
     $sql = "SELECT 
         SUM(CASE WHEN category = 'salaries' THEN amount ELSE 0 END) as total_salaries,
         SUM(CASE WHEN category = 'Product Purchase' THEN amount ELSE 0 END) as total_product_purchase,
@@ -37,12 +42,13 @@ function getExpenseDataByCategory($conn, $month, $year) {
         SUM(CASE WHEN category = 'asset purchase' THEN amount ELSE 0 END) as total_asset_purchase,
         SUM(CASE WHEN category = 'others' THEN amount ELSE 0 END) as total_others
         FROM expense
-        WHERE MONTH(date) = :month AND YEAR(date) = :year";
+        WHERE MONTH(date) = :month AND YEAR(date) = :year AND company_id = :company_id";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute([
         ':month' => $month,
-        ':year' => $year
+        ':year' => $year,
+        ':company_id' => $company_id
     ]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }

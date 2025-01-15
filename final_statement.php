@@ -1,6 +1,4 @@
 <?php
-// ini_set('display_errors', 1);
-// error_reporting(E_ALL);
 ob_start();
 include('statement_functions.php');
 include('modal.php');
@@ -2119,8 +2117,9 @@ $net_profit_loss = $total_revenue - $total_expenses;
 				<div class="row justify-content-center">
 					<div class="col-12" style="background:white; padding:50px;">
 						<div class="statement_heading" style="text-align:center; margin-bottom:30px;">
-							<h2>DIT SECTOR3</h2>
-							<p style="color:black;">Income Statement<br>
+							<!-- <h2>DIT SECTOR3</h2> -->
+							<h2>STATEMENT</h2>
+							<p style="color:black;"> 
 								Month Ended <span style="border-bottom:1px dashed red;"><?php echo $monthName; ?> <?php echo $year; ?></span>
 							</p>
 							<div>
