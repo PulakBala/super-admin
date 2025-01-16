@@ -282,12 +282,17 @@ $page_title = isset($page_titles[$current_page]) ? $page_titles[$current_page] :
 
 
         <div class="main">
+  
             <nav class="navbar navbar-expand navbar-light navbar-bg">
                 <a class="sidebar-toggle js-sidebar-toggle">
                     <i class="hamburger align-self-center">
                         <span></span>
                     </i>
                 </a>
+                
+                <?php if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super_admin'): ?>
+                    <h4>আমাদের একাউন্টস সফটওয়্যার এর বেটা ভার্সন আপনি ব্যবহার করছেন। সফটওয়্যার ব্যবহার করতে যেয়ে কোনো ধরনের সম্যসা ফেস করলে আমাদেরকে জানাবেন হোয়াটএপে  মেসেজ করে. <span class="" style="color:#025144">+8801681539324</span></h4>
+                <?php endif; ?>
 
                 <!-- <div class="navbar-collapse collapse">
 

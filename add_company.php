@@ -13,10 +13,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $company_name = $_POST['company_name'];
     $admin_email = $_POST['admin_email'];
     $admin_password = $_POST['admin_password'];
+    $mobile_number = $_POST['mobile_number']; // New field
+    $company_address = $_POST['company_address']; // New field
 
     // কোম্পানি ডেটা ইনসার্ট করুন
-    $stmt = $conn->prepare("INSERT INTO companies (name) VALUES (:name)");
+    $stmt = $conn->prepare("INSERT INTO companies (name, mobile_number, address) VALUES (:name, :mobile_number, :address)");
     $stmt->bindParam(':name', $company_name);
+    $stmt->bindParam(':mobile_number', $mobile_number); // New field
+    $stmt->bindParam(':address', $company_address); // New field
     $stmt->execute();
     $company_id = $conn->lastInsertId(); // নতুন কোম্পানির ID
 
