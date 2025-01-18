@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $category = $_POST['category'];
     $description = $_POST['description'];
     $user_id = $_SESSION['user_id']; // Assuming user ID is stored in session
+    $company_id = $_SESSION['company_id'];
 
     
     // Fetch company_id based on user_id
@@ -67,9 +68,10 @@ if ($company_id === null) {
 }
 
 // Modify the query to include pagination
-$sql = "SELECT expense.id, expense.amount, expense.date, expense.category, expense.description, users.fullname 
+$sql = "SELECT expense.id, expense.amount, expense.date, expense.category, expense.description, users.fullname, ec.category_name 
         FROM expense 
         JOIN users ON expense.user_id = users.id
+        JOIN expense_categories ec ON expense.category = ec.id
         WHERE expense.company_id = :company_id
         ORDER BY expense.date DESC, expense.id DESC 
         LIMIT :offset, :records_per_page";
@@ -79,6 +81,21 @@ $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->bindParam(':records_per_page', $records_per_page, PDO::PARAM_INT);
 $stmt->execute();
 $expenses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ক্যাটাগরি ফেচ করা
+// ক্যাটাগরি ফেচ করা
+$category_sql = "SELECT id, category_name FROM expense_categories WHERE company_id = :company_id";
+$category_stmt = $conn->prepare($category_sql);
+$category_stmt->bindParam(':company_id', $company_id, PDO::PARAM_INT);
+$category_stmt->execute();
+$expense_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Check if no categories are found
+if (empty($expense_categories)) {
+    // No categories found, handle accordingly (e.g., show a message or do nothing)
+    // echo "<script>toastr.error('No categories found for this company.');</script>";
+    // exit; // Uncomment if you want to stop further execution
+}
 ?>
 <!-- Include Toastr CSS and JS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -141,21 +158,9 @@ $expenses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <label class="form-label" style="font-size: 1rem; font-weight: bold;">Category</label>
                                 <select class="form-select form-select-lg" name="category" required>
                                     <option value="" disabled selected>Select Category</option>
-                                    <option value="Salaries">Salaries</option>
-                                    <option value="Product Purchase">Product Purchase</option>
-                                    <option value="Desk Rent">Desk Rent</option>
-                                    <option value="Loan">Loan</option>
-                                    <option value="Cash Out">Cash Out</option>
-                                    <option value="Gift">Gift</option>
-                                    <option value="Mobile Recharge">Mobile Recharge</option>
-                                    <option value="Teacher Payment">Teacher Payment</option>
-                                    <option value="Repaid">Repaid</option>
-                                    <option value="Marketing">Marketing</option>
-                                    <option value="Utilities">Utilities</option>
-                                    <option value="Maintenance and repairs">Maintenance and repairs</option>
-                                    <option value="Official Documents Cost">Official Documents Cost</option>
-                                    <option value="Asset Purchase">Asset Purchase</option>
-                                    <option value="Others">Others</option>
+                                    <?php foreach ($expense_categories as $category): ?>
+                                        <option value="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['category_name']); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -196,7 +201,7 @@ $expenses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php foreach ($expenses as $expense): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($expense['date']); ?></td>
-                                <td><?php echo htmlspecialchars($expense['category']); ?></td>
+                                <td><?php echo htmlspecialchars($expense['category_name']); ?></td>
                                 <td><?php echo htmlspecialchars(number_format($expense['amount'], 0)); ?></td>
                                 <td><?php echo htmlspecialchars($expense['description']); ?></td>
                                  <td><?php echo htmlspecialchars($expense['fullname']); ?></td> 

@@ -10,7 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $category = $_POST['category'];
     $note = $_POST['note'];
     $user_id = $_SESSION['user_id']; // Assuming user ID is stored in session
- 
+    $company_id = $_SESSION['company_id'];
+   
+
 
     // Fetch company_id based on user_id
     $user_sql = "SELECT company_id FROM users WHERE id = :user_id";
@@ -18,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user_stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $user_stmt->execute();
     $company_id = $user_stmt->fetchColumn(); // Get company_id
-  
+
 
     // Prepare and execute the SQL query to insert data using PDO
     $sql = "INSERT INTO revenue (amount, payment_type, date, category, note, user_id, company_id) VALUES (:amount, :payment_type, :date, :category, :note, :user_id, :company_id)";
@@ -67,12 +69,13 @@ if ($company_id === null) {
     exit; // Stop further execution
 }
 
-// Modify the existing query to include pagination
-$sql = "SELECT revenue.id, revenue.amount, revenue.date, revenue.payment_type, revenue.category, revenue.note, revenue.created_at, users.fullname 
+// Modify the existing query to include category name
+$sql = "SELECT revenue.id, revenue.amount, revenue.date, revenue.payment_type, revenue.note, users.fullname, rc.category_name 
         FROM revenue 
         JOIN users ON revenue.user_id = users.id
+        JOIN revenue_categories rc ON revenue.category = rc.id
         WHERE revenue.company_id = :company_id
-        ORDER BY revenue.created_at DESC 
+        ORDER BY revenue.date DESC, revenue.id DESC 
         LIMIT :offset, :records_per_page";
 
 $stmt = $conn->prepare($sql);
@@ -81,6 +84,20 @@ $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->bindParam(':records_per_page', $records_per_page, PDO::PARAM_INT);
 $stmt->execute();
 $revenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ক্যাটাগরি ফেচ করা
+$category_sql = "SELECT id, category_name FROM revenue_categories WHERE company_id = :company_id";
+$category_stmt = $conn->prepare($category_sql);
+$category_stmt->bindParam(':company_id', $company_id, PDO::PARAM_INT);
+$category_stmt->execute();
+$revenue_categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Check if no categories are found
+if (empty($revenue_categories)) {
+    // No categories found, handle accordingly (e.g., show a message or do nothing)
+    // echo "<script>toastr.error('No categories found for this company.');</script>";
+    // exit; // Uncomment if you want to stop further execution
+}
 ?>
 
 <!-- Include Toastr CSS and JS -->
@@ -125,8 +142,8 @@ $revenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <label class="form-label" style="font-size: 1rem; font-weight: bold;">Amount (৳)</label>
                                 <input type="number" class="form-control form-control-lg" name="amount" placeholder="Enter amount" required>
                             </div>
-                            
-                             <div class="mb-3">
+
+                            <div class="mb-3">
                                 <label class="form-label" style="font-size: 1rem; font-weight: bold;">Date</label>
                                 <input type="date" class="form-control form-control-lg" name="date" required>
                             </div>
@@ -136,28 +153,27 @@ $revenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <!--    <label class="form-label" style="font-size: 1rem; font-weight: bold;">Payment Type</label>-->
                             <!--    <input type="text" class="form-control form-control-lg" name="payment_type" placeholder="Enter payment type" required>-->
                             <!--</div>-->
-                            
-                            
+
+
                             <div class="mb-3">
-    <label class="form-label" style="font-size: 1rem; font-weight: bold;">Payment Type</label>
-    <select class="form-control form-control-lg" name="payment_type" required>
-        <option value="" disabled selected>Select payment type</option>
-        <option value="Cash">Cash</option>
-        <option value="Bkash">Bkash</option>
-        <option value="Nagad">Nagad</option>
-        <option value="Rocket">Rocket</option>
-        <option value="Bank Transfer">Bank Transfer</option>
-    </select>
-</div>
+                                <label class="form-label" style="font-size: 1rem; font-weight: bold;">Payment Type</label>
+                                <select class="form-control form-control-lg" name="payment_type" required>
+                                    <option value="" disabled selected>Select payment type</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Bkash">Bkash</option>
+                                    <option value="Nagad">Nagad</option>
+                                    <option value="Rocket">Rocket</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                </select>
+                            </div>
 
                             <div class="mb-3">
                                 <label class="form-label" style="font-size: 1rem; font-weight: bold;">Category</label>
                                 <select class="form-select form-select-lg" name="category" required>
                                     <option value="" disabled selected>Select Category</option>
-                                    <option value="Sales">Sales</option>
-                                    <option value="Investment">Investment</option>
-                                    <option value="Loan received">Loan Received</option>
-                                    <option value="Others">Others</option>
+                                    <?php foreach ($revenue_categories as $category): ?>
+                                        <option value="<?php echo htmlspecialchars($category['id']); ?>"><?php echo htmlspecialchars($category['category_name']); ?></option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
 
@@ -198,14 +214,14 @@ $revenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php foreach ($revenues as $revenue): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($revenue['date']))); ?></td>
-                                <td><?php echo htmlspecialchars($revenue['category']); ?></td>
+                                <td><?php echo htmlspecialchars($revenue['category_name']); ?></td>
                                 <td><?php echo htmlspecialchars(number_format($revenue['amount'], 0)); ?></td>
                                 <td><?php echo htmlspecialchars($revenue['payment_type']); ?></td>
                                 <td><?php echo htmlspecialchars($revenue['note']); ?></td>
                                 <td><?php echo htmlspecialchars($revenue['fullname']); ?></td>
                                 <td>
-                                <a href="javascript:void(0);" onclick="loadEditForm(<?php echo htmlspecialchars($revenue['id']); ?>);" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="javascript:void(0);" onclick="openDeleteModal('delete_addData.php?table=revenue&id=<?php echo htmlspecialchars($revenue['id']); ?>');" class="btn btn-sm btn-danger">Delete</a>
+                                    <a href="javascript:void(0);" onclick="loadEditForm(<?php echo htmlspecialchars($revenue['id']); ?>);" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="javascript:void(0);" onclick="openDeleteModal('delete_addData.php?table=revenue&id=<?php echo htmlspecialchars($revenue['id']); ?>');" class="btn btn-sm btn-danger">Delete</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -280,7 +296,10 @@ $revenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $.ajax({
             url: 'edit_addData.php',
             type: 'GET',
-            data: { id: id, table: 'revenue' },
+            data: {
+                id: id,
+                table: 'revenue'
+            },
             success: function(response) {
                 $('#editModal .modal-body').html(response);
                 $('#editModal').modal('show');
@@ -316,8 +335,8 @@ $revenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $('#confirmModal').modal('show');
         return false; // Prevent form submission
     }
-    
-     document.getElementById('confirmAdd').addEventListener('click', function() {
+
+    document.getElementById('confirmAdd').addEventListener('click', function() {
         $('#confirmModal').modal('hide');
         document.querySelector('form').submit(); // Submit the form
     });

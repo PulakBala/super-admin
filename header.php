@@ -211,24 +211,24 @@ $page_title = isset($page_titles[$current_page]) ? $page_titles[$current_page] :
             <div class="sidebar-content js-simplebar">
                 <a class="sidebar-brand" href="#">
                     <!-- <img src="img/avatars/e-bazar-logo-white-final.png" alt="accounts-ebazar" style="max-width: 200px; height: auto;"> -->
-                     <!-- <span>DIT SECTOR3</span> -->
+                    <!-- <span>DIT SECTOR3</span> -->
                 </a>
-                
+
                 <div class="user-profile">
                     <div class="user-info">
                         <i class="fas fa-user-circle"></i>
                         <?php if (isset($_SESSION['fullname'])): ?>
                             <span class="user-name"><?php echo htmlspecialchars($_SESSION['fullname']); ?></span>
-                            
+
                         <?php else: ?>
                             <span class="user-name">Guest</span>
-                            
+
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <ul class="sidebar-nav">
-                  
+
                     <li class="sidebar-item <?= $current_page == 'home.php' ? 'active' : '' ?>">
                         <a class="sidebar-link" href="home.php">
                             <i class="fas fa-tachometer-alt"></i>
@@ -253,6 +253,15 @@ $page_title = isset($page_titles[$current_page]) ? $page_titles[$current_page] :
                             <span class="align-middle">Statement</span>
                         </a>
                     </li>
+
+                    <li class="sidebar-item <?= $current_page == 'category.php' ? 'active' : '' ?>">
+                        <a class="sidebar-link" href="category.php">
+                            <i class="fas fa-plus"></i>
+                            <span class="align-middle">Add Category</span>
+                        </a>
+                    </li>
+
+
                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
                         <li class="sidebar-item <?= $current_page == 'super_admin_dashboard.php' ? 'active' : '' ?>">
                             <a class="sidebar-link" href="super_admin_dashboard.php">
@@ -282,16 +291,16 @@ $page_title = isset($page_titles[$current_page]) ? $page_titles[$current_page] :
 
 
         <div class="main">
-  
+
             <nav class="navbar navbar-expand navbar-light navbar-bg">
                 <a class="sidebar-toggle js-sidebar-toggle">
                     <i class="hamburger align-self-center">
                         <span></span>
                     </i>
                 </a>
-                
+
                 <?php if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super_admin'): ?>
-                    <h4>আমাদের একাউন্টস সফটওয়্যার এর বেটা ভার্সন আপনি ব্যবহার করছেন। সফটওয়্যার ব্যবহার করতে যেয়ে কোনো ধরনের সম্যসা ফেস করলে আমাদেরকে জানাবেন হোয়াটএপে  মেসেজ করে. <span class="" style="color:#025144">+8801681539324</span></h4>
+                    <h4>আমাদের একাউন্টস সফটওয়্যার এর বেটা ভার্সন আপনি ব্যবহার করছেন। সফটওয়্যার ব্যবহার করতে যেয়ে কোনো ধরনের সম্যসা ফেস করলে আমাদেরকে জানাবেন হোয়াটএপে মেসেজ করে. <span class="" style="color:#025144">+8801681539324</span></h4>
                 <?php endif; ?>
 
                 <!-- <div class="navbar-collapse collapse">

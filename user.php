@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 
 $company_id = $_SESSION['company_id'];
 
+
 try {
     $stmt = $conn->prepare("SELECT fullname, email, role, created_at FROM users WHERE company_id = :company_id");
     $stmt->bindParam(':company_id', $company_id);

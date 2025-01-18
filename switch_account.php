@@ -4,7 +4,7 @@ include('db_connection.php');
 // Check if a company ID is provided
 if (isset($_GET['company_id'])) {
     $company_id = (int) $_GET['company_id'];
-    var_dump($company_id);
+
 
     // Fetch users details based on the company ID
     $stmt = $conn->prepare("SELECT * FROM users WHERE company_id = ?");
@@ -17,6 +17,7 @@ if (isset($_GET['company_id'])) {
         $_SESSION['fullname'] = $users['fullname'];
         $_SESSION['email'] = $users['email'];
         $_SESSION['role'] = $users['role'];
+        $_SESSION['company_id'] = $users['company_id'];
 
         // Redirect to the user's dashboard or home page
         header("Location: home.php");
